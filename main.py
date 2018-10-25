@@ -8,9 +8,12 @@ r=sr.Recognizer()
 
 with sr.Microphone() as source:
     print ("Say Something")
+    r.adjust_for_ambient_noise(source)
     audio = r.listen(source)
+    print("0")
+    
 
-try:
+#try:
     sps=''
     sps=r.recognize_google(audio_data=audio,language="bn-BN")
     print("1")
@@ -31,8 +34,8 @@ try:
             pass
         mixer.music.load('test2.mp3')
         print("done")
-except:
-    pass
+#except:
+#    pass
 
 
 
