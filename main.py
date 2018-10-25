@@ -7,8 +7,9 @@ mixer.init()
 r=sr.Recognizer()
 
 with sr.Microphone() as source:
-    print ("Say Something")
+    print ("wait")
     r.adjust_for_ambient_noise(source)
+    print("say")
     audio = r.listen(source)
     print("0")
     
