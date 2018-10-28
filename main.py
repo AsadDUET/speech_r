@@ -14,7 +14,7 @@ with sr.Microphone() as source:
     print("0")
     
 
-#try:
+try:
     sps=''
     sps=r.recognize_google(audio_data=audio,language="bn-BN")
     print("1")
@@ -35,8 +35,8 @@ with sr.Microphone() as source:
             pass
         mixer.music.load('test2.mp3')
         print("done")
-#except:
-#    pass
+except:
+    pass
 
 
 
