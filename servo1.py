@@ -7,7 +7,7 @@ import time
 
 # Import the PCA9685 module.
 import Adafruit_PCA9685
-import random
+
 
 # Uncomment to enable debug output.
 #import logging
@@ -18,7 +18,12 @@ pwm = Adafruit_PCA9685.PCA9685()
 
 # Alternatively specify a different address and/or bus:
 #pwm = Adafruit_PCA9685.PCA9685(address=0x41, busnum=2)
-
+current_0=
+current_1=
+current_2=
+target_0=
+target_1=
+target_2=
 # Configure min and max servo pulse lengths
 servo_min = 150  # Min pulse length out of 4096
 servo_max = 375  # Max pulse length out of 4096
@@ -40,23 +45,12 @@ def set_servo_pulse(channel, pulse):
 
 # Set frequency to 60hz, good for servos.
 pwm.set_pwm_freq(60)
-print('press Ctrl-C to quit...')
+print('Moving servo on channel 0, press Ctrl-C to quit...')
 
 def up():
     pwm.set_pwm(0, 0, servo_max)
     pwm.set_pwm(1, 0, servo_min)
     pwm.set_pwm(2, 0, side_mid)
-def slow_up():
-    for i in range(0,servo_max-servo_mid):
-        time.sleep(.01)
-        pwm.set_pwm(0, 0, servo_mid+i)
-        pwm.set_pwm(1, 0, servo_mid-i)
-        pwm.set_pwm(2, 0, side_mid)
-    for i in range(0,servo_max-servo_mid):
-        time.sleep(.01)
-        pwm.set_pwm(0, 0, servo_max-i)
-        pwm.set_pwm(1, 0, servo_min+i)
-        pwm.set_pwm(2, 0, side_mid)
 def down():
     pwm.set_pwm(0, 0, servo_min)
     pwm.set_pwm(1, 0, servo_max)
@@ -69,42 +63,10 @@ def left_tilt():
     pwm.set_pwm(0, 0, servo_max)
     pwm.set_pwm(1, 0, servo_max)
     pwm.set_pwm(2, 0, side_mid)
-def slow_left_tilt():
-    for i in range(0,servo_max-servo_mid):
-        time.sleep(.01)
-        pwm.set_pwm(0, 0, servo_mid+i)
-        pwm.set_pwm(1, 0, servo_mid+i)
-        pwm.set_pwm(2, 0, side_mid)
-    for i in range(0,servo_max-servo_mid):
-        time.sleep(.01)
-        pwm.set_pwm(0, 0, servo_max-i)
-        pwm.set_pwm(1, 0, servo_max-i)
-        pwm.set_pwm(2, 0, side_mid)
 def right_tilt():
     pwm.set_pwm(0, 0, servo_min)
     pwm.set_pwm(1, 0, servo_min)
     pwm.set_pwm(2, 0, side_mid)
-def slow_right_tilt():
-    for i in range(0,servo_max-servo_mid):
-        time.sleep(.01)
-        pwm.set_pwm(0, 0, servo_mid-i)
-        pwm.set_pwm(1, 0, servo_mid-i)
-        pwm.set_pwm(2, 0, side_mid)
-    for i in range(0,servo_max-servo_mid):
-        time.sleep(.01)
-        pwm.set_pwm(0, 0, servo_min+i)
-        pwm.set_pwm(1, 0, servo_min+i)
-        pwm.set_pwm(2, 0, side_mid)
-def talking():
-    mid()
-    time.sleep(.1)
-    pwm.set_pwm(0, 0, servo_mid-random.randint(-2,2)*15)
-    time.sleep(.1)
-    pwm.set_pwm(1, 0, servo_mid-random.randint(-2,2)*15)
-    time.sleep(.1)
-    pwm.set_pwm(2, 0, side_mid)
-    time.sleep(.1)
-    mid()
 def left_turn():
     pwm.set_pwm(0, 0, servo_mid)
     pwm.set_pwm(1, 0, servo_mid)
@@ -113,6 +75,7 @@ def right_turn():
     pwm.set_pwm(0, 0, servo_mid)
     pwm.set_pwm(1, 0, servo_mid)
     pwm.set_pwm(2, 0, side_right)
+
 
 def listening_led():
     pwm.set_pwm(14, 0, 4000)
@@ -136,14 +99,13 @@ def motion():
     time.sleep(.5)
     mid()
     time.sleep(.5)
-def slow_motion():
-    j=random.randint(0,2)
-    if j is 0:
-        slow_up()
-    if j is 1:
-        slow_left_tilt()
-    if j is 2:
-        slow_right_tilt()
 
 if __name__=="__main__":
-    mid()
+    for x in range(150,300):
+        print(x)
+        time.sleep(.01)
+        pwm.set_pwm(2, 0, x)
+    for x in range(0,150):
+        print(x)
+        time.sleep(.01)
+        pwm.set_pwm(2, 0, 300-x)

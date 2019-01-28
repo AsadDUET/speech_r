@@ -1,6 +1,6 @@
 import speech_recognition as sr
 from gtts import gTTS
-from pygame import mixer # Load the required library
+from pygame import mixer
 import os
 import os.path
 import sys
@@ -17,7 +17,7 @@ import servo
 CLIENT_ACCESS_TOKEN = 'dde3d7f999434732a56d9887b7c43d09'#robot
 #CLIENT_ACCESS_TOKEN = '332da3ed83324895993de3f7f7ca5f91'#asad
 #CLIENT_ACCESS_TOKEN ='1a62a0de8e1a42bdb544334977437567 '#joke
-
+thinking=0
 mixer.init()
 r=sr.Recognizer()
 r.energy_threshold = 1000
@@ -44,25 +44,30 @@ def random_sound():
             pass
         mixer.music.load("test2.mp3")
     except:
+        print("random sound error")
         pass
 
 def conversation():
     while True:
-        print("\n\nsay")
-        a = datetime.datetime.now()
         try:
-         audio = r.listen(source=source)#,timeout=0.5,phrase_time_limit=5)
-        except KeyboardInterrupt:
-            raise
-        except:
-            break
-        b = datetime.datetime.now()
-        print("listentime: ",b-a)
-        c=datetime.datetime.now()
-        sps=''
-        time_pass_thread=threading.Thread(name="time_pass_thread",target=servo.listen_end())
-        time_pass_thread.start()
-        try:
+            
+            print("\n\nsay")
+            servo.listening_led()
+            a = datetime.datetime.now()
+            try:
+             audio = r.listen(source=source)#,timeout=0.5,phrase_time_limit=5)
+            except KeyboardInterrupt:
+                raise
+            except:
+                break
+            b = datetime.datetime.now()
+            print("listentime: ",b-a)
+            c=datetime.datetime.now()
+            sps=''
+            servo.processing_led()
+    ##        time_pass_thread=threading.Thread(name="time_pass_thread",target=servo.slow_motion())
+    ##        time_pass_thread.start()
+            #try:
             print ("trying recog")
             a = datetime.datetime.now()
             sps=r.recognize_google(audio_data=audio,language="bn-BN")
@@ -79,56 +84,57 @@ def conversation():
             # spsb=translate(spsr,'bn')
             b = datetime.datetime.now()
             print("dialogflow time: ",b-a)
-            time_pass_thread.join()
-
-            try: # Load local
-                a = datetime.datetime.now()
-                mixer.music.load("sound/"+spsr+".mp3")
-                b = datetime.datetime.now()
-                print("local load time: ",b-a)
-            except: # load from gtts
-                a = datetime.datetime.now()
-                tts = gTTS(text=spsr, lang='bn')
-                b = datetime.datetime.now()
-                print("TTS time: ",b-a)
-
-                try: # save with variable name
-                    a = datetime.datetime.now()
-                    tts.save("sound/"+spsr+".mp3")
-                    b = datetime.datetime.now()
-                    print("Saveing time: ",b-a)
+    ##            time_pass_thread.join()
+            if(spsr=="jokes"):
+                mixer.music.load("sound/jokes_"+str(random.randint(1,2))+".mp3")
+            else:
+                try: # Load local
                     a = datetime.datetime.now()
                     mixer.music.load("sound/"+spsr+".mp3")
                     b = datetime.datetime.now()
-                    print("load time: ",b-a)
-                except:
-                    try: # save using test name
+                    print("local load time: ",b-a)
+                except: # load from gtts
+                    a = datetime.datetime.now()
+                    tts = gTTS(text=spsr, lang='bn')
+                    b = datetime.datetime.now()
+                    print("TTS time: ",b-a)
+
+                    try: # save with variable name
                         a = datetime.datetime.now()
-                        tts.save("test.mp3")
+                        tts.save("sound/"+spsr+".mp3")
                         b = datetime.datetime.now()
                         print("Saveing time: ",b-a)
                         a = datetime.datetime.now()
-                        mixer.music.load("test.mp3")
+                        mixer.music.load("sound/"+spsr+".mp3")
                         b = datetime.datetime.now()
                         print("load time: ",b-a)
                     except:
-                        print("can't save")
+                        try: # save using test name
+                            a = datetime.datetime.now()
+                            tts.save("test.mp3")
+                            b = datetime.datetime.now()
+                            print("Saveing time: ",b-a)
+                            a = datetime.datetime.now()
+                            mixer.music.load("test.mp3")
+                            b = datetime.datetime.now()
+                            print("load time: ",b-a)
+                        except:
+                            print("can't save")
 
             d = datetime.datetime.now()
             print("total time: ",d-c)
 
             mixer.music.play()
-            time_pass_thread=threading.Thread(name="time_pass_thread",target=servo.motion())
-            time_pass_thread.start()
+
             # print(translate(spsr,'bn'))
             while(mixer.music.get_busy()):
-                pass
+                    servo.talking()
             mixer.music.load("test2.mp3")
             print("end")
-            time_pass_thread.join()
         except KeyboardInterrupt:
             raise
         except:
+            print("main loop error")
             pass
 
 while True:
