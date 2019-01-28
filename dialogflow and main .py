@@ -1,4 +1,4 @@
-import speech_recognition as sr
+
 from gtts import gTTS
 from pygame import mixer
 import os
@@ -12,26 +12,26 @@ import threading
 import random
 import time
 import servo
-
+import VoiceUsingChrome
 # CLIENT_ACCESS_TOKEN = '67d03b977e32456d89d1e4e84613cac5'#bangla
 CLIENT_ACCESS_TOKEN = 'dde3d7f999434732a56d9887b7c43d09'#robot
 #CLIENT_ACCESS_TOKEN = '332da3ed83324895993de3f7f7ca5f91'#asad
 #CLIENT_ACCESS_TOKEN ='1a62a0de8e1a42bdb544334977437567 '#joke
 thinking=0
 mixer.init()
-r=sr.Recognizer()
-r.energy_threshold = 1000
-
+response_json =''
 def dialog(text):
+    global response_json
     ai = apiai.ApiAI(CLIENT_ACCESS_TOKEN)
     request = ai.text_request()
     request.session_id = "<robot>"
     request.query = text
     response = request.getresponse()
     a=str(response.read(), 'utf-8')
-    b=json.loads(a)
-    print(b)
-    return (b["result"]["fulfillment"]["messages"][0]["speech"])#["textToSpeech"])
+    response_json =json.loads(a)
+    print(response_json)
+    print(response_json['result']['metadata']['intentName'])
+    return (response_json["result"]["fulfillment"]["messages"][0]["speech"])#["textToSpeech"])
 
 def random_sound():
     time.sleep(1)
@@ -48,45 +48,25 @@ def random_sound():
         pass
 
 def conversation():
+    global response_json
     while True:
         try:
-            
-            print("\n\nsay")
             servo.listening_led()
-            a = datetime.datetime.now()
-            try:
-             audio = r.listen(source=source)#,timeout=0.5,phrase_time_limit=5)
-            except KeyboardInterrupt:
-                raise
-            except:
-                break
-            b = datetime.datetime.now()
-            print("listentime: ",b-a)
             c=datetime.datetime.now()
-            sps=''
-            servo.processing_led()
-    ##        time_pass_thread=threading.Thread(name="time_pass_thread",target=servo.slow_motion())
-    ##        time_pass_thread.start()
-            #try:
-            print ("trying recog")
-            a = datetime.datetime.now()
-            sps=r.recognize_google(audio_data=audio,language="bn-BN")
-            b = datetime.datetime.now()
-            print("recognize time: ",b-a)
-            a = datetime.datetime.now()
-            sps=translate(sps)
-            b = datetime.datetime.now()
-            print("translate time: ",b-a)
+            sps=None
+            while (sps==None):
+                sps=VoiceUsingChrome.voice_from_chrome()
             print(sps)
+            servo.processing_led()
 
             a = datetime.datetime.now()
             spsr=dialog(sps)
-            # spsb=translate(spsr,'bn')
             b = datetime.datetime.now()
             print("dialogflow time: ",b-a)
-    ##            time_pass_thread.join()
             if(spsr=="jokes"):
                 mixer.music.load("sound/jokes_"+str(random.randint(1,2))+".mp3")
+
+
             else:
                 try: # Load local
                     a = datetime.datetime.now()
@@ -126,10 +106,20 @@ def conversation():
 
             mixer.music.play()
 
-            # print(translate(spsr,'bn'))
             while(mixer.music.get_busy()):
                     servo.talking()
             mixer.music.load("test2.mp3")
+            
+            if(response_json['result']['metadata']['intentName']=='look'):
+                time.sleep(.5)
+                if(response_json['result']['parameters']['look_direction']=='up'):
+                    servo.up()
+                elif(response_json['result']['parameters']['look_direction']=='left'):
+                    servo.left_turn()
+                elif(response_json['result']['parameters']['look_direction']=='right'):
+                    servo.right_turn()
+                elif(response_json['result']['parameters']['look_direction']=='front'):
+                    servo.mid()
             print("end")
         except KeyboardInterrupt:
             raise
@@ -138,14 +128,7 @@ def conversation():
             pass
 
 while True:
-    with sr.Microphone() as source:
         try:
-            print ("wait")
-            r.adjust_for_ambient_noise(source=source,duration=1)
-        #        r.operation_timeout = 10
-
-            # detector = r.snowboy_wait_for_hot_word("./","mr.pmdl",source)#"mr.pmdl",
-            # detector.start(conversation)
             conversation()
         except KeyboardInterrupt:
             raise
